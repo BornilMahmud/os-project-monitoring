@@ -1,0 +1,25 @@
+# Temporary files & runtime logs
+*.tmp
+*.log
+*.swp
+*~
+
+# Application exported reports & metrics
+exports/
+reports/
+*.csv
+
+# OS generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Test temp files
+.bats-run*
+tests/tmp/
