@@ -137,7 +137,12 @@ EOF_RUNNER_HEADER
         else
             failed=$((failed + 1))
             echo -e "  ${RED}✗${NC} $tname"
-            sed 's/^/    /' "$output_file"
+            if [[ -s "$output_file" ]]; then
+                sed 's/^/    /' "$output_file"
+            else
+                echo "    (Command failed with exit code $test_status; running with -x to trace):"
+                bash -x -e "$runner_script" 2>&1 | tail -n 10 | sed 's/^/    /'
+            fi
         fi
         rm -f "$output_file" "$runner_script" 2>/dev/null || true
     done
