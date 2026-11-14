@@ -102,8 +102,8 @@ storage_collect_filesystems() {
             local cap="${parts[4]}"
             local mount="${parts[5]}"
 
-            # Ignore virtual/special mounts
-            if [[ "$mount" =~ ^/(dev|sys|proc) ]]; then
+            # Ignore virtual/internal subsystem mounts
+            if [[ "$mount" =~ ^/(dev|sys|proc|usr/lib|mnt/wsl|run) || "$mount" == "/init" ]]; then
                 continue
             fi
 

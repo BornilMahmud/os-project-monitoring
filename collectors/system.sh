@@ -11,6 +11,11 @@ SYS_HOSTNAME=""
 SYS_UPTIME_SEC=0
 SYS_UPTIME_PRETTY="0s"
 SYS_CURRENT_USER=""
+SYS_VIRT_TYPE="Bare Metal"
+SYS_IS_WSL="false"
+SYS_HOST_OS=""
+SYS_HOST_RAM_GB="N/A"
+SYS_HOST_UPTIME="N/A"
 
 # Parse distribution details from /etc/os-release or fallback
 system_collect_os() {
@@ -67,10 +72,61 @@ system_collect_uptime() {
     SYS_UPTIME_PRETTY=$(format_duration "$int_sec")
 }
 
+# Detect virtualization environment (WSL2, Container, VM, or Bare Metal)
+system_detect_virtualization() {
+    SYS_IS_WSL="false"
+    SYS_VIRT_TYPE="Bare Metal"
+    SYS_HOST_OS=""
+
+    # 1. Check for WSL / WSL2
+    if [[ -f "/proc/version" ]] && grep -qi "microsoft" /proc/version 2>/dev/null; then
+        SYS_IS_WSL="true"
+        SYS_VIRT_TYPE="WSL2 (Windows Subsystem for Linux)"
+        SYS_HOST_OS="Windows"
+
+        # Query host physical memory and uptime if PowerShell is available
+        if command -v powershell.exe >/dev/null 2>&1; then
+            local h_ram
+            h_ram=$(powershell.exe -NoProfile -NonInteractive -Command "[Math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 1)" 2>/dev/null | tr -d '\r\n ' || true)
+            if [[ -n "$h_ram" ]]; then
+                SYS_HOST_RAM_GB="${h_ram} GB"
+            fi
+
+            local h_up
+            h_up=$(powershell.exe -NoProfile -NonInteractive -Command "
+                \$os = Get-CimInstance Win32_OperatingSystem
+                \$uptime = (Get-Date) - \$os.LastBootUpTime
+                [string]::Format('{0}d {1:D2}h {2:D2}m', \$uptime.Days, \$uptime.Hours, \$uptime.Minutes)
+            " 2>/dev/null | tr -d '\r\n' || true)
+            if [[ -n "$h_up" ]]; then
+                SYS_HOST_UPTIME="$h_up"
+            fi
+        fi
+        return 0
+    fi
+
+    # 2. Check for containers
+    if [[ -f "/.dockerenv" ]] || [[ -f "/run/.containerenv" ]]; then
+        SYS_VIRT_TYPE="Container (Docker / Podman)"
+        return 0
+    fi
+
+    # 3. Check systemd-detect-virt
+    if command -v systemd-detect-virt >/dev/null 2>&1; then
+        local virt
+        virt=$(systemd-detect-virt 2>/dev/null || echo "none")
+        if [[ "$virt" != "none" ]]; then
+            SYS_VIRT_TYPE="Virtual Machine ($virt)"
+            return 0
+        fi
+    fi
+}
+
 # Collect overall system identity
 system_collect() {
     system_collect_os
     system_collect_uptime
+    system_detect_virtualization
 
     SYS_KERNEL=$(uname -r 2>/dev/null || echo "Unknown")
     SYS_ARCH=$(uname -m 2>/dev/null || echo "Unknown")

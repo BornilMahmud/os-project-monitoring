@@ -5,6 +5,8 @@
 # CPU Metrics state variables
 CPU_INFO_MODEL="Unknown CPU"
 CPU_INFO_CORES=1
+CPU_INFO_PHYSICAL_CORES=1
+CPU_INFO_LOGICAL_CORES=1
 CPU_INFO_MHZ="N/A"
 
 CPU_LOAD_1M="0.00"
@@ -39,6 +41,7 @@ cpu_collect_info() {
     local model=""
     local mhz=""
     local cores=0
+    local phys_cores=0
 
     while IFS= read -r line || [[ -n "$line" ]]; do
         if [[ "$line" =~ ^model[[:space:]]+name[[:space:]]*:[[:space:]]*(.*)$ ]]; then
@@ -47,6 +50,10 @@ cpu_collect_info() {
             fi
         elif [[ "$line" =~ ^processor[[:space:]]*:[[:space:]]*[0-9]+ ]]; then
             cores=$((cores + 1))
+        elif [[ "$line" =~ ^cpu[[:space:]]+cores[[:space:]]*:[[:space:]]*([0-9]+) ]]; then
+            if [[ $phys_cores -eq 0 ]]; then
+                phys_cores="${BASH_REMATCH[1]}"
+            fi
         elif [[ "$line" =~ ^cpu[[:space:]]+MHz[[:space:]]*:[[:space:]]*([0-9]+) ]]; then
             if [[ -z "$mhz" ]]; then
                 mhz="${BASH_REMATCH[1]}"
@@ -57,10 +64,19 @@ cpu_collect_info() {
     CPU_INFO_MODEL="${model:-Unknown CPU}"
     if [[ $cores -gt 0 ]]; then
         CPU_INFO_CORES="$cores"
+        CPU_INFO_LOGICAL_CORES="$cores"
     elif command -v nproc >/dev/null 2>&1; then
         CPU_INFO_CORES=$(nproc 2>/dev/null || echo 1)
+        CPU_INFO_LOGICAL_CORES="$CPU_INFO_CORES"
     else
         CPU_INFO_CORES=1
+        CPU_INFO_LOGICAL_CORES=1
+    fi
+
+    if [[ $phys_cores -gt 0 ]]; then
+        CPU_INFO_PHYSICAL_CORES="$phys_cores"
+    else
+        CPU_INFO_PHYSICAL_CORES="$CPU_INFO_CORES"
     fi
 
     # Fallback for frequency if not in cpuinfo
