@@ -80,9 +80,9 @@ storage_collect_filesystems() {
     STORAGE_FS_AVAIL_KB=()
     STORAGE_FS_PERCENT=()
 
-    local df_cmd="df -P -k"
+    local -a df_cmd=(df -P -k)
     if df -x tmpfs >/dev/null 2>&1; then
-        df_cmd="df -P -k -x tmpfs -x devtmpfs -x squashfs 2>/dev/null"
+        df_cmd=(df -P -k -x tmpfs -x devtmpfs -x squashfs)
     fi
 
     local header=1
@@ -100,7 +100,8 @@ storage_collect_filesystems() {
             local used="${parts[2]}"
             local avail="${parts[3]}"
             local cap="${parts[4]}"
-            local mount="${parts[5]}"
+            # Capture full mount point even with spaces
+            local mount="${parts[*]:5}"
 
             # Ignore virtual/internal subsystem mounts
             if [[ "$mount" =~ ^/(dev|sys|proc|usr/lib|mnt/wsl|run) || "$mount" == "/init" ]]; then
@@ -117,7 +118,7 @@ storage_collect_filesystems() {
             STORAGE_FS_PERCENT+=("${pct:-0}")
             STORAGE_FS_MOUNT+=("$mount")
         fi
-    done < <(eval "$df_cmd" 2>/dev/null || df -P -k 2>/dev/null || true)
+    done < <("${df_cmd[@]}" 2>/dev/null || df -P -k 2>/dev/null || true)
 }
 
 storage_collect() {

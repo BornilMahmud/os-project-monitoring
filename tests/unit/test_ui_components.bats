@@ -6,6 +6,7 @@ setup() {
     source "$PROJECT_ROOT/config/loader.sh"
     source "$PROJECT_ROOT/ui/components.sh"
     source "$PROJECT_ROOT/ui/navigation.sh"
+    source "$PROJECT_ROOT/ui/input.sh"
     config_init "$PROJECT_ROOT/config/defaults.conf"
 }
 
@@ -52,4 +53,18 @@ setup() {
     # Clamps at 0
     nav_scroll_up
     [ "$NAV_SCROLL_OFFSET" -eq 0 ]
+}
+
+@test "ui_read_input updates navigation state in current shell without subshell" {
+    nav_set_tab 1
+    # Feed key '2' directly to ui_read_input via here-string (no pipeline subshell)
+    ui_read_input 0.1 <<< "2"
+
+    [ "$UI_ACTION" = "TAB_CHANGED" ]
+    [ "$UI_CURRENT_TAB" -eq 2 ]
+
+    # Feed key 'p' to toggle pause
+    ui_read_input 0.1 <<< "p"
+    [ "$UI_ACTION" = "PAUSE" ]
+    [ "$UI_PAUSED" = "true" ]
 }

@@ -79,19 +79,10 @@ process_parse_file() {
     done < "$file"
 }
 
-# Collect top CPU and top memory consuming processes
+# Collect top CPU and top memory consuming processes directly via process substitution
 process_collect() {
     local limit="${1:-25}"
 
-    local tmp_cpu
-    tmp_cpu=$(mktemp /tmp/smd_proc_cpu.XXXXXX)
-    ps -eo pid,user,%cpu,%mem,comm --sort=-%cpu 2>/dev/null > "$tmp_cpu" || true
-    process_parse_file "$tmp_cpu" "cpu" "$limit"
-    rm -f "$tmp_cpu" 2>/dev/null || true
-
-    local tmp_mem
-    tmp_mem=$(mktemp /tmp/smd_proc_mem.XXXXXX)
-    ps -eo pid,user,%cpu,%mem,comm --sort=-%mem 2>/dev/null > "$tmp_mem" || true
-    process_parse_file "$tmp_mem" "mem" "$limit"
-    rm -f "$tmp_mem" 2>/dev/null || true
+    process_parse_file <(ps -eo pid,user,%cpu,%mem,comm --sort=-%cpu 2>/dev/null || true) "cpu" "$limit"
+    process_parse_file <(ps -eo pid,user,%cpu,%mem,comm --sort=-%mem 2>/dev/null || true) "mem" "$limit"
 }

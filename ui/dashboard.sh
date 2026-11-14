@@ -249,7 +249,7 @@ render_view_battery() {
         echo -e "  Technology       : $BATTERY_TECH"
         echo -e "  Power Rate       : ${BATTERY_POWER_W} W"
     else
-        echo -e "  Power Source     : Desktop PC / AC Mains Power (AMD Ryzen 5700G)"
+        echo -e "  Power Source     : Desktop PC / AC Mains Power ($CPU_INFO_MODEL)"
         echo -e "  Battery Presence : Not Detected"
     fi
 }
@@ -315,7 +315,7 @@ dashboard_render_help() {
 dashboard_render_footer() {
     echo -e "${C_PRIMARY}├──────────────────────────────────────────────────────────────────────┤${C_RESET}"
     printf "${C_PRIMARY}│${C_RESET} ${C_MUTED}[1-9] Tabs [Arrows] Nav [P]ause [R]efresh [E]xport [H]elp [Q]uit${C_RESET} ${C_PRIMARY}│${C_RESET}\n"
-    echo -e "${C_PRIMARY}└──────────────────────────────────────────────────────────────────────┘${C_RESET}"
+    echo -e "${C_PRIMARY}└──────────────────────────────────────────────────────────────────────┘${C_RESET}\033[J"
 }
 
 # Main dashboard render function

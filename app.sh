@@ -37,6 +37,7 @@ source "$APP_DIR/ui/dashboard.sh"
 
 # Signal cleanup handler
 cleanup_and_exit() {
+    trap - EXIT INT TERM HUP
     ui_restore_term
     exit 0
 }
@@ -44,6 +45,7 @@ cleanup_and_exit() {
 # Window resize handler
 handle_resize() {
     ui_get_term_size
+    tput clear 2>/dev/null || printf "\033[2J"
     dashboard_draw
 }
 
@@ -147,24 +149,22 @@ main() {
                 shift 2
                 ;;
             --export-report)
-                headless_report="${2:-default}"
-                if [[ "$headless_report" =~ ^- ]]; then
-                    headless_report="default"
+                if [[ $# -gt 1 && ! "$2" =~ ^- ]]; then
+                    headless_report="$2"
+                    shift 2
                 else
-                    shift 2 || true
-                    break
+                    headless_report="default"
+                    shift 1
                 fi
-                shift
                 ;;
             --export-csv)
-                headless_csv="${2:-default}"
-                if [[ "$headless_csv" =~ ^- ]]; then
-                    headless_csv="default"
+                if [[ $# -gt 1 && ! "$2" =~ ^- ]]; then
+                    headless_csv="$2"
+                    shift 2
                 else
-                    shift 2 || true
-                    break
+                    headless_csv="default"
+                    shift 1
                 fi
-                shift
                 ;;
             *)
                 echo "Unknown option: $1" >&2
@@ -245,18 +245,17 @@ main() {
 
     # Continuous Real-Time Interactive Loop
     while true; do
-        # 1. Listen for user keyboard input (non-blocking)
-        local action
-        action=$(ui_read_input "$sub_poll")
+        # 1. Listen for user keyboard input (non-blocking, direct shell state mutation)
+        ui_read_input "$sub_poll"
 
-        case "$action" in
+        case "$UI_ACTION" in
             QUIT)
                 cleanup_and_exit
                 ;;
-            REDRAW|TAB_CHANGED)
-                dashboard_draw
-                ;;
-            PAUSE)
+            REDRAW|TAB_CHANGED|PAUSE)
+                if [[ "$UI_ACTION" == "TAB_CHANGED" && "$UI_CURRENT_TAB" -eq 4 ]]; then
+                    process_collect 25
+                fi
                 dashboard_draw
                 ;;
             EXPORT)
@@ -291,7 +290,9 @@ main() {
             network_collect
             thermal_collect
             battery_collect
-            process_collect 25
+            if [[ "$UI_CURRENT_TAB" -eq 4 ]]; then
+                process_collect 25
+            fi
 
             # Push to history ring buffers
             history_push "cpu" "$CPU_USAGE_TOTAL"
