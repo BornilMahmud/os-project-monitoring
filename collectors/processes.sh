@@ -34,7 +34,7 @@ process_parse_file() {
         PROC_MEM_COMM=()
     fi
 
-    if [[ ! -f "$file" || ! -r "$file" ]]; then
+    if [[ ! -r "$file" ]]; then
         return 0
     fi
 
