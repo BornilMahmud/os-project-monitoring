@@ -41,6 +41,20 @@ teardown() {
     grep -q "MEMORY & SWAP" "$out_file"
 }
 
+@test "app.sh headless export generates valid HTML report file" {
+    out_html="$TEST_TMP_DIR/test_report.html"
+    run bash "$PROJECT_ROOT/app.sh" --export-html "$out_html"
+    [ "$status" -eq 0 ]
+    [ -f "$out_html" ]
+    [ -s "$out_html" ]
+
+    # Verify HTML report content
+    grep -q "<title>SMD-TUI 2.0 - System Intelligence Report</title>" "$out_html"
+    grep -q "CPU Utilization" "$out_html"
+    grep -q "Memory Utilization" "$out_html"
+    grep -q "Mounted Storage Volumes" "$out_html"
+}
+
 @test "app.sh headless export generates valid CSV metrics file" {
     out_csv="$TEST_TMP_DIR/test_metrics.csv"
     run bash "$PROJECT_ROOT/app.sh" --export-csv "$out_csv"

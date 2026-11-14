@@ -64,6 +64,7 @@ Options:
   -i, --interval <sec>     Refresh interval in seconds (default: 2)
   -t, --theme <name>       Color theme (default, cyan, green, amber, monochrome)
   --check-deps             Check for recommended system utilities
+  --export-html [file]     Generate a live HTML report and exit (headless mode)
   --export-report [file]   Generate a system report and exit (headless mode)
   --export-csv [file]      Generate/append live metrics to CSV and exit
 
@@ -118,6 +119,7 @@ main() {
     local custom_config=""
     local override_interval=""
     local override_theme=""
+    local headless_html=""
     local headless_report=""
     local headless_csv=""
 
@@ -147,6 +149,15 @@ main() {
             -t|--theme)
                 override_theme="${2:-}"
                 shift 2
+                ;;
+            --export-html)
+                if [[ $# -gt 1 && ! "$2" =~ ^- ]]; then
+                    headless_html="$2"
+                    shift 2
+                else
+                    headless_html="default"
+                    shift 1
+                fi
                 ;;
             --export-report)
                 if [[ $# -gt 1 && ! "$2" =~ ^- ]]; then
@@ -186,6 +197,15 @@ main() {
     fi
 
     # 2. Check for headless export modes
+    if [[ -n "$headless_html" ]]; then
+        local target=""
+        if [[ "$headless_html" != "default" ]]; then target="$headless_html"; fi
+        local generated
+        generated=$(export_report_html "$target")
+        echo "HTML system report generated: $generated"
+        exit 0
+    fi
+
     if [[ -n "$headless_report" ]]; then
         local target=""
         if [[ "$headless_report" != "default" ]]; then target="$headless_report"; fi
@@ -259,11 +279,13 @@ main() {
                 dashboard_draw
                 ;;
             EXPORT)
+                local h_file
+                h_file=$(export_report_html "")
                 local r_file
                 r_file=$(export_report_txt "")
                 local c_file
                 c_file=$(export_metrics_csv "")
-                _add_alert "EXPORT" "INFO" "OK" "-" "Report exported to $(basename "$r_file")"
+                _add_alert "EXPORT" "INFO" "OK" "-" "Report exported: $(basename "$h_file") & exports/"
                 dashboard_draw
                 ;;
             REFRESH)

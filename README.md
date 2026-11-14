@@ -72,7 +72,7 @@ bash scripts/demo_collectors.sh
 | **`Up` / `Down`, `j` / `k`** | Scroll process tables and alert logs |
 | **`P`** | Pause / Resume live data refreshing |
 | **`R`** | Force immediate hardware metric refresh |
-| **`E`** | Export live system report and CSV metrics log |
+| **`E`** | Export live HTML system report, text report, and CSV telemetry |
 | **`H` or `?`** | Toggle interactive keyboard help overlay |
 | **`Q` or `Esc`** | Cleanly quit SMD-TUI and restore terminal state |
 
@@ -80,14 +80,14 @@ bash scripts/demo_collectors.sh
 
 ## Testing & Quality Assurance
 
-SMD-TUI 2.0 includes a comprehensive automated test suite of **54 tests** across unit, integration, and regression tiers:
+SMD-TUI 2.0 includes a comprehensive automated test suite of **56 tests** across unit, integration, and regression tiers:
 
 ```bash
 bash tests/run_tests.sh
 ```
 
 - **Unit Tests**: Mathematical deltas, byte scalers, config validation, CPU/RAM collectors, storage I/O, network bandwidth, thermals, battery, processes, history ring buffers, graphs, and UI components.
-- **Integration Tests**: CLI arguments, version, dependency validation, headless report generation, and CSV output.
+- **Integration Tests**: CLI arguments, version, dependency validation, headless text/HTML report generation, and CSV output.
 - **Regression & Safety Audit**: Static code analysis guaranteeing zero usage of `sudo`, zero writes to `/proc` or `/sys`, zero process kills, and zero destructive disk operations.
 
 ---

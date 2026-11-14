@@ -122,7 +122,10 @@ ENABLE_ALERTS=true
 # Start with custom theme and 1-second refresh
 ./app.sh -t cyan -i 1
 
-# Generate a system report non-interactively
+# Generate a modern interactive HTML report non-interactively
+./app.sh --export-html report.html
+
+# Generate a plain text system report non-interactively
 ./app.sh --export-report report.txt
 
 # Append live metrics to CSV non-interactively
