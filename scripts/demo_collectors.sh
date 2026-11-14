@@ -146,7 +146,7 @@ if [[ "$BATTERY_PRESENT" == "true" ]]; then
     echo -e "  Health : $BATTERY_HEALTH"
     echo -e "  Tech   : $BATTERY_TECH"
 else
-    echo -e "  Status : ${YELLOW}$BATTERY_STATUS${NC} (Desktop PC / AC Power - AMD Ryzen 5700G)"
+    echo -e "  Status : ${YELLOW}$BATTERY_STATUS${NC} (Desktop PC / AC Power - ${CPU_INFO_MODEL})"
 fi
 
 # 8. Top Processes
@@ -168,3 +168,5 @@ done
 echo -e "\n${CYAN}======================================================================${NC}"
 echo -e "${GREEN}${BOLD}✓ Live hardware data collection verified successfully!${NC}"
 echo -e "${CYAN}======================================================================${NC}"
+echo -e "  ${DIM}• Launch Live Continuous Monitor : ./app.sh${NC}"
+echo -e "  ${DIM}• Export Real-Time HTML Report   : ./app.sh --export-html report.html${NC}\n"
