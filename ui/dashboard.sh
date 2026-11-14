@@ -43,6 +43,12 @@ dashboard_render_tabs() {
 # View 1: System Overview
 render_view_overview() {
     echo -e "  ${C_BOLD}[ SYSTEM OVERVIEW ]${C_RESET}  ${C_DIM}Environment: $SYS_VIRT_TYPE${C_RESET}"
+    if [[ "$SYS_IS_WSL" == "true" ]]; then
+        echo -e "  ${C_DIM}Host Machine : Windows (Host Uptime: $SYS_HOST_UPTIME | Total Physical RAM: $SYS_HOST_RAM_GB)${C_RESET}"
+        if [[ "$SYS_HOST_GPU" != "N/A" ]]; then
+            echo -e "  ${C_DIM}Host GPU     : $SYS_HOST_GPU${C_RESET}"
+        fi
+    fi
     echo ""
 
     # Row 1: CPU & Memory summary gauges
@@ -181,6 +187,10 @@ render_view_thermals() {
         echo -e "  Thermal Status   : ${C_DIM}N/A${C_RESET}"
         echo -e "  Reason           : Running inside a virtualized environment ($SYS_VIRT_TYPE)."
         echo -e "                     Hyper-V does not expose motherboard ACPI thermal zones to Linux guests."
+        if [[ "$SYS_HOST_GPU" != "N/A" ]]; then
+            echo ""
+            echo -e "  Host Graphics    : ${C_BOLD}$SYS_HOST_GPU${C_RESET}"
+        fi
     fi
 }
 

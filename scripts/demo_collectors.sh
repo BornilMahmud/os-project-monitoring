@@ -46,6 +46,9 @@ echo -e "  Linux Uptime  : $SYS_UPTIME_PRETTY (since WSL2 instance started)"
 if [[ "$SYS_IS_WSL" == "true" ]]; then
     echo -e "  ${DIM}└─ Host OS    : Windows (Host Uptime: $SYS_HOST_UPTIME)${NC}"
     echo -e "  ${DIM}└─ Host RAM   : $SYS_HOST_RAM_GB total physical PC memory${NC}"
+    if [[ "$SYS_HOST_GPU" != "N/A" ]]; then
+        echo -e "  ${DIM}└─ Host GPU   : $SYS_HOST_GPU${NC}"
+    fi
 fi
 
 # 2. CPU Collection

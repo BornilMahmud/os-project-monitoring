@@ -16,6 +16,7 @@ SYS_IS_WSL="false"
 SYS_HOST_OS=""
 SYS_HOST_RAM_GB="N/A"
 SYS_HOST_UPTIME="N/A"
+SYS_HOST_GPU="N/A"
 
 # Parse distribution details from /etc/os-release or fallback
 system_collect_os() {
@@ -100,6 +101,15 @@ system_detect_virtualization() {
             " 2>/dev/null | tr -d '\r\n' || true)
             if [[ -n "$h_up" ]]; then
                 SYS_HOST_UPTIME="$h_up"
+            fi
+
+            local h_gpu
+            h_gpu=$(powershell.exe -NoProfile -NonInteractive -Command "
+                \$gpus = Get-CimInstance Win32_VideoController | Select-Object -ExpandProperty Name
+                [string]::Join(', ', \$gpus)
+            " 2>/dev/null | tr -d '\r\n' || true)
+            if [[ -n "$h_gpu" ]]; then
+                SYS_HOST_GPU="$h_gpu"
             fi
         fi
         return 0
